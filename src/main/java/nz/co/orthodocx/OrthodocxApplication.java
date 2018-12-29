@@ -1,8 +1,10 @@
 package nz.co.orthodocx;
 
 import com.mongodb.reactivestreams.client.MongoClients;
-import nz.co.orthodocx.models.Profile;
-import nz.co.orthodocx.repositories.ProfileRepository;
+import nz.co.orthodocx.annotation.LogExecutionTime;
+import nz.co.orthodocx.model.Profile;
+import nz.co.orthodocx.repository.mongodb.reactive.ReactiveProfileRepository;
+import nz.co.orthodocx.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +13,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import reactor.core.publisher.Flux;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
@@ -25,10 +27,13 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 @SpringBootApplication
 public class OrthodocxApplication implements CommandLineRunner {
 
-    private static Logger logger = LoggerFactory.getLogger(OrthodocxApplication.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(OrthodocxApplication.class);
 
     @Autowired
-    private ProfileRepository repository;
+    private ReactiveProfileRepository repository;
+
+    @Autowired
+    private Service service;
 
     public static void main(String[] args) {
         wordCount();
@@ -48,6 +53,7 @@ public class OrthodocxApplication implements CommandLineRunner {
         logger.info(collect.toString());
     }
 
+    @LogExecutionTime
     private static void testReactiveMongo() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ReactiveMongoTemplate mongoOps = new ReactiveMongoTemplate(MongoClients.create(), "database");
@@ -72,18 +78,21 @@ public class OrthodocxApplication implements CommandLineRunner {
         // fetch all customers
         logger.info("Customers found with findAll():");
         logger.info("-------------------------------");
-        List<Profile> all = repository.findAll();
-        all.stream().forEach(profile -> logger.info(profile.toString()));
+        Flux<Profile> all = repository.findAll();
+        all.toStream().forEach(profile -> logger.info(profile.toString()));
 
         // fetch an individual customer
         logger.info("Customer found with findByFirstName('Jack'):");
         logger.info("--------------------------------");
-        Profile jack = repository.findByFirstName("Jack");
+        Flux<Profile> jack = repository.findByFirstname("Jack");
         logger.info(jack.toString());
 
         logger.info("Customers found with findByLastName('Tot'):");
         logger.info("--------------------------------");
-        List<Profile> tot = repository.findByLastName("Tot");
-        tot.stream().forEach(profile -> logger.info(profile.toString()));
+        Flux<Profile> tot = repository.findByLastnameOrderByFirstname("Tot", null);
+        tot.toStream().forEach(profile -> logger.info(profile.toString()));
+
+        service.serve();
     }
+
 }
