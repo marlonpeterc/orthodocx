@@ -1,0 +1,49 @@
+{
+  "patientId": "uniqueId",
+  "firstName": "",
+  "lastName": "",
+  "middleName": "",
+  "preferredName": "",
+  "dateOfBirth": "",
+  "visits": [
+    {
+      "startDateTime": "dd-mm-yyyy HH:mm:ss",
+      "endDateTime": "dd-mm-yyyy HH:mm:ss",
+      "title": "Headache",
+      "diagnosedBy": "Dr. Who",
+      "location": "The Clinic",
+      "encounters": [
+        {
+          "visitNote": {
+            "provider": "Super User",
+            "location": "Registration Desk",
+            "dateTime": "dd-mm-yyyy HH:mm:ss",
+            "primaryDiagnosis": "Headache",
+            "secondaryDiagnosis": "Migraine",
+            "clinicalNote": "Blah blah"
+          },
+          "vitals": {
+            "height": 5.5,
+            "weight": 65.0,
+            "heightUnit": "feet",
+            "weightUnit": "kilogram",
+            "calculatedBmi": "",
+            "temperature": 36.5,
+            "temperatureUnit": "Celcius",
+            "pulseRate": "60",
+            "respiratoryRate": "",
+            "bloodPressure": "",
+            "bloodOxygenSaturation": ""
+          }
+        }
+      ]
+    }
+  ],
+  "appointments": [
+    {
+      "startDateTime": "dd-mm-yyyy HH:mm:ss",
+      "endDateTime": "dd-mm-yyyy HH:mm:ss",
+      "title": "Regular check-up"
+    }
+  ]
+}
