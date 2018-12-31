@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
 @Repository
-public class ProfileRepository {
+public class ProfileMongoTemplateRepository {
 
     @Autowired
     private ReactiveMongoTemplate mongoOps;
