@@ -1,31 +1,24 @@
 package nz.co.orthodocx.repository.mongodb.reactive;
 
 import nz.co.orthodocx.model.Profile;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import nz.co.orthodocx.test.data.ProfileTest;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.test.StepVerifier;
 
 @DataMongoTest
-@RunWith(SpringRunner.class)
-public class ProfileCrudRepositoryIntegrationTest {
+public class ProfileCrudRepositoryIntegrationTest implements ProfileTest {
 
     @Autowired
     private ProfileCrudRepository repository;
 
-    private final Profile p1 = new Profile("0101", "Jack", "Sparrow");
-    private final Profile p2 = new Profile("0102", "Jack", "Cole");
-    private final Profile p3 = new Profile("0103", "Dave", "Jones");
-    private final Profile p4 = new Profile("0104", "Dick", "Cole");
-
-    @Before
-    public void enableFluxDebug() {
+    @BeforeAll
+    static void enableFluxDebug() {
         Hooks.onOperatorDebug();
     }
 

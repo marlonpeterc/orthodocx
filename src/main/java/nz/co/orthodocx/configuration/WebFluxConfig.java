@@ -1,8 +1,9 @@
 package nz.co.orthodocx.configuration;
 
+import lombok.extern.slf4j.Slf4j;
 import nz.co.orthodocx.handler.ProfileHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import nz.co.orthodocx.model.Profile;
+import nz.co.orthodocx.repository.mongodb.reactive.ProfileCrudRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -12,10 +13,9 @@ import static nz.co.orthodocx.constants.Routes.*;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
+@Slf4j
 @Configuration
 public class WebFluxConfig {
-
-    private Logger log = LoggerFactory.getLogger(WebFluxConfig.class);
 
     @Bean
     public RouterFunction<ServerResponse> profileRoutes(ProfileHandler ph) {
