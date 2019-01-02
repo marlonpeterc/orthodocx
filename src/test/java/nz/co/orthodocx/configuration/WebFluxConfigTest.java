@@ -2,6 +2,7 @@ package nz.co.orthodocx.configuration;
 
 import nz.co.orthodocx.constants.Routes;
 import nz.co.orthodocx.handler.ProfileHandler;
+import nz.co.orthodocx.model.Profile;
 import nz.co.orthodocx.repository.mongodb.reactive.ProfileCrudRepository;
 import nz.co.orthodocx.service.ProfileService;
 import nz.co.orthodocx.test.data.ProfileTest;
@@ -13,22 +14,23 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 
+//import org.springframework.security.test.context.support.WithAnonymousUser;
+//import org.springframework.security.test.context.support.WithMockUser;
+
 @WebFluxTest
-@WithMockUser
+//@WithMockUser
+//@WithAnonymousUser
 @Import({
         WebFluxConfig.class,
         ProfileHandler.class,
         ProfileService.class
 })
 public class WebFluxConfigTest implements ProfileTest {
-
-    private WebFluxConfig webFluxConfig = new WebFluxConfig();
 
     @Autowired
     private WebTestClient webTestClient;
@@ -144,6 +146,66 @@ public class WebFluxConfigTest implements ProfileTest {
 
         webTestClient
                 .get().uri(Routes.PROFILE_BY_FIRSTNAME_AND_LASTNAME.pattern(), "Jack", "Sparrow")
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+                .expectBody()
+                .json(expected);
+    }
+
+    @Test
+    public void create() {
+        String expected = "{id: '0101', firstname: 'Jack', lastname: 'Sparrow'}";
+
+        Mockito
+                .when(repository.save(Mockito.any(Profile.class)))
+                .thenReturn(Mono.just(p1));
+
+        webTestClient
+                .post().uri(Routes.PROFILE_BY_FIRSTNAME_AND_LASTNAME.pattern(), "Jack", "Sparrow")
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+                .expectBody()
+                .json(expected);
+    }
+
+    @Test
+    public void update() {
+        String expected = "{id: '0101', firstname: 'Jack', lastname: 'Sparrow'}";
+
+        Mockito
+                .when(this.repository.findById(p1.getId()))
+                .thenReturn(Mono.just(p1));
+        Mockito
+                .when(repository.save(Mockito.any(Profile.class)))
+                .thenReturn(Mono.just(p1));
+
+        webTestClient
+                .put().uri(Routes.PROFILE_BY_ID_FNAME_LNAME.pattern(), "0101", "Jack", "Sparrow")
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+                .expectBody()
+                .json(expected);
+    }
+
+    @Test
+    public void delete() {
+        String expected = "{id: '0101', firstname: 'Jack', lastname: 'Sparrow'}";
+
+        Mockito
+                .when(this.repository.findById(p1.getId()))
+                .thenReturn(Mono.just(p1));
+        Mockito
+                .when(this.repository.deleteById(p1.getId()))
+                .thenReturn(Mono.empty());
+
+        webTestClient
+                .delete().uri(Routes.PROFILE_BY_ID.pattern(), "0101")
                 .accept(MediaType.APPLICATION_JSON_UTF8)
                 .exchange()
                 .expectStatus().isOk()

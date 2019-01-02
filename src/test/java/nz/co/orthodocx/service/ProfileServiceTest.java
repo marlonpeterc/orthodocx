@@ -9,8 +9,10 @@ import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.function.Predicate;
@@ -120,18 +122,66 @@ public class ProfileServiceTest implements ProfileTest {
 
     @Test
     public void findAll() {
-        Flux<Profile> saved = repository.saveAll(Flux.just(p1, p2, p3, p4));
+        Publisher<Profile> saved = repository
+                .deleteAll()
+                .thenMany(repository.saveAll(Flux.just(p1, p2, p3, p4)));
 
-        Flux<Profile> composite = service.findAll().thenMany(saved);
+        Flux<Profile> find = repository.findAll();
 
-        Predicate<Profile> match = profile -> saved.any(saveItem -> saveItem.equals(profile)).block();
+        Publisher<Profile> fromRepository = Flux
+                .from(saved)
+                .thenMany(find);
+
+        Publisher<Profile> actual = this.service
+                .findAll()
+                .thenMany(fromRepository);
 
         StepVerifier
-                .create(composite)
-                .expectNextMatches(match)
-                .expectNextMatches(match)
-                .expectNextMatches(match)
-                .expectNextMatches(match)
+                .create(actual)
+                .expectNext(p1)
+                .expectNext(p2)
+                .expectNext(p3)
+                .expectNext(p4)
+                .verifyComplete();
+    }
+
+    @Test
+    public void create() {
+        Mono<Profile> profile = this.service.create("J", "K");
+
+        StepVerifier
+                .create(profile)
+                .expectNextMatches(saved -> StringUtils.hasText(saved.getId()))
+                .verifyComplete();
+    }
+
+    @Test
+    public void update() {
+        Mono<Profile> saved = this.service
+                .create("J", "K")
+                .flatMap(p -> this.service.update(p.getId(), "L", "M"));
+
+        Predicate<Profile> updatedProfile =
+                p -> p.getFirstname().equals("L") && p.getLastname().equals("M");
+
+        StepVerifier
+                .create(saved)
+                .expectNextMatches(updatedProfile)
+                .verifyComplete();
+    }
+
+    @Test
+    public void delete() {
+        Mono<Profile> deleted = this.service
+                .create("J", "K")
+                .flatMap(saved -> this.service.delete(saved.getId()));
+
+        Predicate<Profile> deletedProfile =
+                p -> p.getFirstname().equals("J") && p.getLastname().equals("K");
+
+        StepVerifier
+                .create(deleted)
+                .expectNextMatches(deletedProfile)
                 .verifyComplete();
     }
 }

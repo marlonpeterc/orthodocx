@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static nz.co.orthodocx.constants.Paths.FIRSTNAME;
+import static nz.co.orthodocx.constants.Paths.ID;
 import static nz.co.orthodocx.constants.Paths.LASTNAME;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
@@ -57,4 +58,29 @@ public class ProfileHandler {
         Flux<Profile> all = profileService.findAll();
         return ok().body(all, Profile.class);
     }
+
+    @LogExecutionTime
+    public Mono<ServerResponse> create(ServerRequest request) {
+        Mono<Profile> profileFlux = profileService.create(
+                request.pathVariable(FIRSTNAME.value()),
+                request.pathVariable(LASTNAME.value()));
+        return ok().body(profileFlux, Profile.class);
+    }
+
+    @LogExecutionTime
+    public Mono<ServerResponse> deleteById(ServerRequest request) {
+        Mono<Profile> profileFlux = profileService.delete(
+                request.pathVariable(ID.value()));
+        return ok().body(profileFlux, Profile.class);
+    }
+
+    @LogExecutionTime
+    public Mono<ServerResponse> udpate(ServerRequest request) {
+        Mono<Profile> profileFlux = profileService.update(
+                request.pathVariable(ID.value()),
+                request.pathVariable(FIRSTNAME.value()),
+                request.pathVariable(LASTNAME.value()));
+        return ok().body(profileFlux, Profile.class);
+    }
+
 }
